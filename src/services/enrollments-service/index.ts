@@ -16,7 +16,7 @@ interface AddressData {
 export async function getAddressFromCEP({ cep }: { cep: string }): Promise<AddressData> {
   const result = await request.get(`${process.env.VIA_CEP_API}/${cep}/json/`);
 
-  if (!result.data) {
+  if (!result.data || result.data.erro) {
     throw notFoundError();
   }
 
@@ -60,7 +60,7 @@ async function createOrUpdateEnrollmentWithAddress(params: CreateOrUpdateEnrollm
   const enrollment = exclude(params, 'address');
   const address = getAddressForUpsert(params.address);
 
-  const cep = '';
+  const { cep } = address;
 
   try {
     await getAddressFromCEP({ cep });
