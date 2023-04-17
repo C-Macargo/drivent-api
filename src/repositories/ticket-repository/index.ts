@@ -17,9 +17,30 @@ async function createTicket(ticket: CreateTicketType) {
   return createdTicket;
 }
 
+async function findTicketByUserId(userId: number) {
+  const tickets = prisma.ticket.findFirst({
+    where: {
+      Enrollment: {
+        userId,
+      },
+    },
+    select: {
+      id: true,
+      status: true,
+      ticketTypeId: true,
+      enrollmentId: true,
+      TicketType: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+  return tickets;
+}
+
 const ticketRepository = {
   createTicket,
   findTicketTypeById,
+  findTicketByUserId,
 };
 
 export default ticketRepository;
