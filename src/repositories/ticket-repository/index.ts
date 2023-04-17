@@ -37,10 +37,16 @@ async function findTicketByUserId(userId: number) {
   return tickets;
 }
 
+async function findTypes() {
+  const types = prisma.ticketType.findMany();
+  return types;
+}
+
 const ticketRepository = {
   createTicket,
   findTicketTypeById,
   findTicketByUserId,
+  findTypes,
 };
 
 export default ticketRepository;
