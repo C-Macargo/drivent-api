@@ -146,13 +146,8 @@ describe('GET /hotels/:hotelId when token is valid', () => {
   it('should respond with 404 if hotel does not exist', async () => {
     const user = await createUser();
     const token = await generateValidToken(user);
-    const enrollment = await createEnrollmentWithAddress(user);
-    const ticketType = await createValidTicketType();
-    const id = faker.random.numeric();
-    await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
-    const hotel = await createHotel();
-    const response = await server.get(`/hotels/${hotel.id}`).set('Authorization', `Bearer ${token}`);
-    expect(response.status).toEqual(httpStatus.NOT_FOUND);
+    const response = await server.get('/hotels/1234').set('Authorization', `Bearer ${token}`);
+    expect(response.status).toBe(httpStatus.NOT_FOUND);
   });
 
   it('should respond with 402 if ticket is not paid', async () => {
