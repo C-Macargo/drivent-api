@@ -18,9 +18,19 @@ export async function findRooms(id: number) {
   return hotel;
 }
 
+export async function findRoomById(roomId: number) {
+  const room = await prisma.room.findFirst({
+    where: {
+      id: roomId,
+    },
+  });
+  return room;
+}
+
 const hotelRepository = {
   findHotels,
   findRooms,
+  findRoomById,
 };
 
 export default hotelRepository;
