@@ -171,3 +171,70 @@ describe('POST /booking', () => {
     });
   });
 });
+
+describe('put /booking', () => {
+  it('Should respond with status 401 if no token is given', async () => {
+    const response = await server.put('/booking/');
+    expect(response.status).toEqual(httpStatus.UNAUTHORIZED);
+  });
+
+  it('Should respond with 401 if given token is not valid', async () => {
+    const token = faker.lorem.word();
+    const response = await server.put('/booking/').set('Authorization', `Bearer ${token}`);
+    expect(response.status).toEqual(httpStatus.UNAUTHORIZED);
+  });
+
+  it('should respond with status 401 if there is no session for a given token', async () => {
+    const userWithoutSession = await createUser();
+    const token = jwt.sign({ userId: userWithoutSession.id }, process.env.JWT_SECRET);
+    const response = await server.put('/booking/').set('Authorization', `Bearer ${token}`);
+    expect(response.status).toEqual(httpStatus.UNAUTHORIZED);
+  });
+
+  describe('POST /bookings when token is valid', () => {
+    it('Should respond with status 200 and booking id', async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      const hotel = await createHotel();
+      const room = await createRoom(hotel.id);
+      const secondRoom = await createRoom(hotel.id);
+      const booking = await createBooking(user.id, room.id);
+      const response = await server
+        .put(`/booking/${booking.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ roomId: secondRoom.id });
+      expect(response.status).toEqual(httpStatus.OK);
+      expect(response.body).toEqual({
+        bookingId: booking.id,
+      });
+    });
+    it('should respond with 404 if room is not found', async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      const response = await server.put('/booking/1').set('Authorization', `Bearer ${token}`).send({ roomId: 1 });
+      expect(response.status).toEqual(httpStatus.NOT_FOUND);
+    });
+    it('should respond with 403 if user has no booking', async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      const hotel = await createHotel();
+      const room = await createRoom(hotel.id);
+      const response = await server.put('/booking/1').set('Authorization', `Bearer ${token}`).send({ roomId: room.id });
+      expect(response.status).toEqual(httpStatus.FORBIDDEN);
+    });
+    it('should respond with 403 if booking does not belong to the user', async () => {
+      const user = await createUser();
+      const secondUser = await createUser();
+      const token = await generateValidToken(user);
+      const secondToken = await generateValidToken(secondUser);
+      const hotel = await createHotel();
+      const room = await createRoom(hotel.id);
+      const booking = await createBooking(secondUser.id, room.id);
+      const response = await server
+        .put(`/booking/${booking.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ roomId: room.id });
+      expect(response.status).toEqual(httpStatus.FORBIDDEN);
+    });
+  });
+});

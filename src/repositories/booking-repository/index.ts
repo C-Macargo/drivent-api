@@ -24,6 +24,15 @@ export async function checkRoomAvailability(roomId: number) {
   return openSpots;
 }
 
+export async function checkBookingById(bookingId: number) {
+  const booking = await prisma.booking.findFirst({
+    where: {
+      id: bookingId,
+    },
+  });
+  return booking;
+}
+
 async function postBooking(userId: number, roomId: number) {
   const booking = await prisma.booking.create({
     data: {
@@ -34,10 +43,23 @@ async function postBooking(userId: number, roomId: number) {
   return booking;
 }
 
+async function updateBookingById(bookingId: number, roomId: number) {
+  return await prisma.booking.update({
+    where: {
+      id: bookingId,
+    },
+    data: {
+      roomId: roomId,
+    },
+  });
+}
+
 const bookingRepository = {
   getBooking,
   checkRoomAvailability,
   postBooking,
+  checkBookingById,
+  updateBookingById,
 };
 
 export default bookingRepository;
